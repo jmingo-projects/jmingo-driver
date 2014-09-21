@@ -7,4 +7,6 @@ repositories {
 dependencies {
     compile 'org.mongodb:mongo-java-driver:2.12.3'
     compile 'de.undercouch:bson4jackson:2.4.0'
+    compile 'com.google.guava:guava:18.0'
+
 }

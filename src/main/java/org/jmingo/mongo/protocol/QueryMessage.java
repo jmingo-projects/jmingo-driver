@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /*
+The OP_QUERY message is used to query the database for documents in a collection. The format of the OP_QUERY message is:
+
 struct OP_QUERY
 {
         MsgHeader header;                 // standard message header
@@ -62,6 +64,14 @@ public class QueryMessage {
 
     public void setFields(Map<String, Object> returnFieldsSelector) {
         this.returnFieldsSelector = returnFieldsSelector;
+    }
+
+    public String getFullCollectionName() {
+        return fullCollectionName;
+    }
+
+    public MsgHeader getMsgHeader() {
+        return msgHeader;
     }
 
     public byte[] getBytes() {
@@ -181,7 +191,6 @@ public class QueryMessage {
 
 
     private byte[] prepareCollectionName() {
-
         return fullCollectionName.getBytes();
     }
 }

@@ -2,6 +2,8 @@ package org.jmingo.mongo.protocol;
 
 
 /*
+In general, each message consists of a standard message header followed by request-specific data.
+The standard message header is structured as follows:
 struct MsgHeader {
         int32   messageLength; - total message size, including this
         int32   requestID;     - identifier for this message
@@ -10,11 +12,28 @@ struct MsgHeader {
         }
 */
 
+import org.jmingo.mongo.client.utils.BsonUtils;
+
 public class MsgHeader {
     private int messageLength = 0;
     private int requestID = 0;
     private int responseTo = 0;
     private int opCode = 0;
+    public static int SIZE = 16;
+
+    public MsgHeader() {
+    }
+
+    public MsgHeader(byte[] data) {
+        int read = 0;
+        messageLength = BsonUtils.readInt(data, read);
+        read += 4;
+        requestID = BsonUtils.readInt(data, read);
+        read += 4;
+        responseTo = BsonUtils.readInt(data, read);
+        read += 4;
+        opCode = BsonUtils.readInt(data, read);
+    }
 
     public int getMessageLength() {
         return messageLength;
@@ -48,4 +67,13 @@ public class MsgHeader {
         this.opCode = opCode;
     }
 
+    @Override
+    public String toString() {
+        return "MsgHeader{" +
+                "messageLength=" + messageLength +
+                ", requestID=" + requestID +
+                ", responseTo=" + responseTo +
+                ", opCode=" + opCode +
+                '}';
+    }
 }
