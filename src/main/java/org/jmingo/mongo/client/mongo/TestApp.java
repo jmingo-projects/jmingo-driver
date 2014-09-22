@@ -15,8 +15,8 @@ import java.net.UnknownHostException;
 public class TestApp {
     public static void main(String[] args) throws UnknownHostException {
         MongoClient mongoClient = new MongoClient("localhost", MongoClientOptions.builder().connectTimeout(1000000000).build());
-        DBCollection dbCollection = mongoClient.getDB("driver_test").getCollection("test");
-        BasicDBObject query = new BasicDBObject("_id", 1);
+        DBCollection dbCollection = mongoClient.getDB("vehicle").getCollection("ModelYear");
+        BasicDBObject query = new BasicDBObject("_id", 100520387);
         long startTime = System.currentTimeMillis();
         DBObject objectdb = dbCollection.find(query).next();
         System.out.println(objectdb.keySet());

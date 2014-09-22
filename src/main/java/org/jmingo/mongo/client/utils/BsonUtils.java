@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * Created by Inspiron on 20.09.2014.
+ * Created by dmgcodevil on 20.09.2014.
  */
 public class BsonUtils {
 
