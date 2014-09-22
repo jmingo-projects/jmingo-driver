@@ -1,14 +1,10 @@
 package org.jmingo.mongo.client;
 
-import com.google.common.primitives.Bytes;
-import org.bson.BSONDecoder;
-import org.bson.BSONObject;
-import org.bson.BasicBSONDecoder;
+import org.jmingo.mongo.marshalling.BSONParser;
 import org.jmingo.mongo.protocol.OpGetMore;
 import org.jmingo.mongo.protocol.OpReply;
 import org.jmingo.mongo.protocol.QueryMessage;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -20,6 +16,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dmgcodevil on 19.09.2014.
@@ -31,11 +28,25 @@ public class SocketReader implements Runnable {
     private InetSocketAddress socketAddress;
     private OpReply opReply;
     private OpGetMore opGetMore;
+    private BSONParser<?> bsonParser;
+    private long startTime = 0;
+    private long elapsedTime = 0;
 
-
-    public SocketReader(QueryMessage message, InetSocketAddress socketAddress) {
+    public SocketReader(QueryMessage message, BSONParser<?> bsonParser, InetSocketAddress socketAddress) {
         this.message = message;
+        this.bsonParser = bsonParser;
         this.socketAddress = socketAddress;
+    }
+
+    public void startBenchmark() {
+        if(startTime == 0){
+            startTime = System.currentTimeMillis();
+        }
+    }
+
+    public void stopBenchmark() {
+        elapsedTime = System.currentTimeMillis() - startTime;
+
     }
 
     @Override
@@ -97,7 +108,7 @@ public class SocketReader implements Runnable {
         //ByteBuffer readBuffer = ByteBuffer.allocate(1024);
         readBuffer.clear();
         int length;
-
+        startBenchmark();
         try {
             length = channel.read(readBuffer);
         } catch (IOException e) {
@@ -122,25 +133,29 @@ public class SocketReader implements Runnable {
 
             opReply = new OpReply(buff);
             System.out.println(opReply);
-            opReply.writeDocuments(fullDocument);
             messageSize = opReply.getMsgHeader().getMessageLength() - OpReply.META_DATA_SIZE;
-        } else {
-            fullDocument.addAll(Bytes.asList(buff));
+            initBuffer(messageSize);
+            opReply.writeDocuments(responseBuffer);
 
+
+        } else {
+            //fullDocument.addAll(Bytes.asList(buff));
+            responseBuffer.put(buff);
         }
 
 
-        if (messageSize == fullDocument.size()) {
 
-            ByteArrayInputStream bais = new ByteArrayInputStream(Bytes.toArray(fullDocument));
+        if (messageSize == responseBuffer.position()) {
 
-            BSONDecoder decoder = new BasicBSONDecoder();
-            try {
-                BSONObject documents = decoder.readObject(bais);
-                System.out.println(documents);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+           // startBenchmark();
+
+            Object res = bsonParser.parse(prepareData());
+            stopBenchmark();
+            if (res instanceof Map) {
+                Map map = (Map) res;
+                System.out.println(map.keySet());
             }
+            System.out.println("total execution time: " + elapsedTime);
         }
 
 
@@ -150,6 +165,11 @@ public class SocketReader implements Runnable {
 
     String decodeUTF8(byte[] bytes) {
         return new String(bytes, UTF8_CHARSET);
+    }
+
+    private byte[] prepareData() {
+        responseBuffer.flip();
+        return responseBuffer.array();
     }
 
 
@@ -184,7 +204,15 @@ public class SocketReader implements Runnable {
         channel.register(selector, SelectionKey.OP_WRITE);
     }
 
+    private void initBuffer(int cap) {
+        if (responseBuffer == null) {
+            responseBuffer = ByteBuffer.allocate(cap);
+            responseBuffer.clear();
+        }
+    }
+
     private List<Byte> fullDocument = new LinkedList<Byte>(); // todo replace with ByteBuffer
+    private ByteBuffer responseBuffer;
     private volatile int messageSize = 0;
 
     public static void main(String[] args) {

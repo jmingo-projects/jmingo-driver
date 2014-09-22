@@ -56,13 +56,21 @@ public class OpReply {
 
     }
 
-
+    @Deprecated
     public void writeDocuments(List<Byte> fullDocument) {
         int offset = META_DATA_SIZE;
         byte[] documentsBytes = new byte[response.length - offset];
         ByteBuffer.wrap(response, offset, response.length - offset).get(documentsBytes);
         fullDocument.addAll(Bytes.asList(documentsBytes));
     }
+
+    public void writeDocuments(ByteBuffer responseBuffer) {
+        int offset = META_DATA_SIZE;
+        byte[] documentsBytes = new byte[response.length - offset];
+        ByteBuffer.wrap(response, offset, response.length - offset).get(documentsBytes);
+        responseBuffer.put(documentsBytes);
+    }
+
 
     public MsgHeader getMsgHeader() {
         return msgHeader;

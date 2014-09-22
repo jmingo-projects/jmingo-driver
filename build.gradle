@@ -2,11 +2,15 @@ apply plugin: 'java'
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/groups/public"
+    }
 }
 
 dependencies {
     compile 'org.mongodb:mongo-java-driver:2.12.3'
     compile 'de.undercouch:bson4jackson:2.4.0'
     compile 'com.google.guava:guava:18.0'
+    compile 'com.github.kohanyirobert:ebson:0.4-SNAPSHOT'
 
 }

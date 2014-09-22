@@ -1,5 +1,8 @@
 package org.jmingo.mongo.client;
 
+import org.jmingo.mongo.marshalling.BasicBSONParser;
+import org.jmingo.mongo.marshalling.EbsonBSONParser;
+import org.jmingo.mongo.marshalling.StreamBSONParser;
 import org.jmingo.mongo.protocol.Flags;
 import org.jmingo.mongo.protocol.MsgHeader;
 import org.jmingo.mongo.protocol.OpCode;
@@ -20,7 +23,8 @@ import java.util.*;
  */
 public class MongoClient {
 
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) throws UnknownHostException, InterruptedException {
+        Thread.sleep(7000);
         MsgHeader msgHeader = new MsgHeader();
         msgHeader.setRequestID(3); //todo should be auto generated
         msgHeader.setOpCode(OpCode.OP_QUERY);
@@ -30,15 +34,10 @@ public class MongoClient {
         queryMessage.setFullCollectionName("driver_test.test");
         Map<String, Object> query = new LinkedHashMap<String, Object>();
         query.put("_id", 1);
-        query.put("number", 10);
 
-        Map<String, Object> fields = new LinkedHashMap<String, Object>();
-        fields.put("text", 1);
-        fields.put("_id", 0);
         queryMessage.setQuery(query);
-        queryMessage.setFields(fields);
-
-        Thread thread = new Thread(new SocketReader(queryMessage, new InetSocketAddress(InetAddress.getLocalHost(), 27017)));
+        Thread thread = new Thread(new SocketReader(queryMessage, new BasicBSONParser(),
+                new InetSocketAddress("localhost", 27017)));
         thread.start();
     }
 }
