@@ -1,4 +1,4 @@
-package org.jmingo.mongo.client.utils;
+package org.jmingo.mongo.client;
 
 import org.bson.BSONObject;
 import org.jmingo.mongo.client.MongoClient;

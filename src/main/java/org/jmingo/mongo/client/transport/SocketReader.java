@@ -1,4 +1,4 @@
-package org.jmingo.mongo.client;
+package org.jmingo.mongo.client.transport;
 
 import org.jmingo.mongo.marshalling.BSONParser;
 import org.jmingo.mongo.protocol.OpGetMore;
